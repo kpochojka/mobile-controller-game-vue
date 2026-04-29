@@ -1,7 +1,17 @@
 <template>
   <div class="jungle-page">
+    <div class="jungle-noise" aria-hidden="true" />
+
     <aside class="sidebar-left">
-      <QRCodeDisplay :url="controllerUrl" :controllerCount="playerList.length" />
+      <header class="brand-block">
+        <h1 class="brand-title">Jungle Birds</h1>
+        <p class="brand-sub">Phone squad · shared screen</p>
+      </header>
+      <QRCodeDisplay
+        :url="controllerUrl"
+        :controllerCount="playerList.length"
+        theme="jungle"
+      />
     </aside>
 
     <main class="canvas-area">
@@ -85,25 +95,73 @@ onUnmounted(() => {
 
 <style scoped>
 .jungle-page {
+  position: relative;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   justify-content: center;
-  gap: 20px;
+  gap: 28px;
   min-height: 100vh;
-  padding: 20px;
+  padding: 28px 24px 40px;
   box-sizing: border-box;
+  font-family: 'Outfit', system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(80, 180, 130, 0.22), transparent 55%),
+    radial-gradient(ellipse 90% 60% at 100% 50%, rgba(30, 90, 60, 0.35), transparent 50%),
+    radial-gradient(ellipse 80% 50% at 0% 80%, rgba(20, 60, 45, 0.4), transparent 45%),
+    linear-gradient(165deg, #06120c 0%, #0a1f16 35%, #061008 100%);
+  color: #e8f5e9;
+  overflow-x: auto;
+}
+
+.jungle-noise {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 0;
 }
 
 .sidebar-left,
 .sidebar-right {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 20px;
+  padding-top: 8px;
+}
+
+.brand-block {
+  text-align: center;
+  margin-bottom: 20px;
+  max-width: 220px;
+}
+
+.brand-title {
+  margin: 0 0 6px;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(120deg, #c8f5c8 0%, #7fd99a 45%, #4ade80 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.brand-sub {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(180, 220, 190, 0.55);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .canvas-area {
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 </style>

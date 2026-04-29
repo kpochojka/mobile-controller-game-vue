@@ -1,11 +1,13 @@
 import { ref } from 'vue'
 import socket from '../socket.js'
+import {
+  JUNGLE_CANVAS_W as CANVAS_W,
+  JUNGLE_CANVAS_H as CANVAS_H,
+  JUNGLE_BIRD_SIZE as BIRD_SIZE,
+  JUNGLE_FOOD_SIZE as FOOD_SIZE
+} from '../constants/jungleGame.js'
 
-const CANVAS_W = 900
-const CANVAS_H = 600
 const BIRD_SPEED = 3
-const BIRD_SIZE = 36
-const FOOD_SIZE = 28
 const FOOD_COUNT = 12
 const ROUND_DURATION = 60
 
