@@ -19,6 +19,22 @@ app.get('*', (req, res) => {
 let displaySocket = null
 const controllerSockets = new Set()
 
+// ── Jungle game state ─────────────────────────────────
+let jungleDisplaySocket = null
+const junglePlayers = new Map() // socket.id → { id, bird, score, name }
+
+const BIRD_POOL = [
+  { emoji: '🦜', name: 'Parrot' },
+  { emoji: '🦚', name: 'Peacock' },
+  { emoji: '🦩', name: 'Flamingo' },
+  { emoji: '🦆', name: 'Duck' },
+  { emoji: '🦅', name: 'Eagle' },
+  { emoji: '🦉', name: 'Owl' },
+  { emoji: '🐦', name: 'Toucan' },
+  { emoji: '🕊️', name: 'Dove' },
+]
+let birdIndex = 0
+
 io.on('connection', (socket) => {
   socket.on('register-display', () => {
     displaySocket = socket
@@ -38,10 +54,65 @@ io.on('connection', (socket) => {
     if (displaySocket) displaySocket.emit('control', data)
   })
 
+  // ── Jungle events ──────────────────────────────────
+  socket.on('register-jungle-display', () => {
+    jungleDisplaySocket = socket
+    socket.emit('jungle-display-ready', { players: [...junglePlayers.values()] })
+  })
+
+  socket.on('register-jungle-player', () => {
+    const bird = BIRD_POOL[birdIndex % BIRD_POOL.length]
+    birdIndex++
+    const player = { id: socket.id, bird, score: 0, name: bird.name }
+    junglePlayers.set(socket.id, player)
+    socket.emit('jungle-player-ready', { id: socket.id, bird, name: bird.name })
+    if (jungleDisplaySocket) {
+      jungleDisplaySocket.emit('jungle-player-joined', { players: [...junglePlayers.values()] })
+    }
+  })
+
+  socket.on('jungle-control', ({ action }) => {
+    if (jungleDisplaySocket) {
+      jungleDisplaySocket.emit('jungle-control', { playerId: socket.id, action })
+    }
+  })
+
+  socket.on('jungle-score-update', ({ playerId, score }) => {
+    const player = junglePlayers.get(playerId)
+    if (player) player.score = score
+    if (jungleDisplaySocket) {
+      jungleDisplaySocket.emit('jungle-score-update', { playerId, score })
+    }
+    const playerSocket = io.sockets.sockets.get(playerId)
+    if (playerSocket) {
+      playerSocket.emit('jungle-score-update', { playerId, score })
+    }
+  })
+
+  socket.on('jungle-game-end', () => {
+    const ranking = [...junglePlayers.values()]
+      .sort((a, b) => b.score - a.score)
+      .map(p => ({ id: p.id, name: p.name, bird: p.bird, score: p.score }))
+    if (jungleDisplaySocket) {
+      jungleDisplaySocket.emit('jungle-final-ranking', { ranking })
+    }
+    junglePlayers.forEach((_, id) => {
+      const s = io.sockets.sockets.get(id)
+      if (s) s.emit('jungle-game-over')
+    })
+  })
+
   socket.on('disconnect', () => {
     if (displaySocket?.id === socket.id) displaySocket = null
     if (controllerSockets.delete(socket.id) && displaySocket) {
       displaySocket.emit('controller-update', { count: controllerSockets.size })
+    }
+    if (jungleDisplaySocket?.id === socket.id) jungleDisplaySocket = null
+    if (junglePlayers.has(socket.id)) {
+      junglePlayers.delete(socket.id)
+      if (jungleDisplaySocket) {
+        jungleDisplaySocket.emit('jungle-player-left', { players: [...junglePlayers.values()] })
+      }
     }
   })
 })

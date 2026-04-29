@@ -19,13 +19,15 @@
 import { ref, onMounted } from 'vue'
 import QRCode from 'qrcode'
 
-defineProps({
-  controllerCount: { type: Number, default: 0 }
+const props = defineProps({
+  controllerCount: { type: Number, default: 0 },
+  url: { type: String, default: null }
 })
 
 const dataUrl = ref('')
 
 function controllerPageUrl() {
+  if (props.url) return props.url
   const fromEnv = import.meta.env.VITE_CONTROLLER_ORIGIN
   if (typeof fromEnv === 'string' && fromEnv.trim() !== '') {
     return `${fromEnv.replace(/\/$/, '')}/controller`
