@@ -22,6 +22,9 @@ import {
   JUNGLE_MONKEY_SIZE as MONKEY_SIZE
 } from '../constants/jungleGame.js'
 
+const JUNGLE_BG_URL =
+  (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/') + 'design/background.png'
+
 const props = defineProps({
   getBoardState: { type: Function, required: true },
   timeLeft:      { type: Number,   required: true },
@@ -29,16 +32,9 @@ const props = defineProps({
 })
 
 const canvasEl = ref(null)
+/** Loaded once; drawn with cover fit to match canvas aspect ratio. */
+const bgImage = ref(null)
 let rafId = null
-let startTime = 0
-
-/** Precomputed firefly base positions (stable per session). */
-const FIREFLIES = Array.from({ length: 18 }, (_, i) => ({
-  x: (i * 97 + 23) % CANVAS_W,
-  y: (i * 61 + 41) % (CANVAS_H - 120) + 40,
-  phase: i * 0.7,
-  size: 1.2 + (i % 4) * 0.35
-}))
 
 function formatTime(secs) {
   const m = Math.floor(secs / 60)
@@ -46,141 +42,67 @@ function formatTime(secs) {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
-function drawSkyAndAtmosphere(ctx, w, h) {
-  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.55)
-  sky.addColorStop(0, '#0c1a2e')
-  sky.addColorStop(0.35, '#143d32')
-  sky.addColorStop(0.7, '#1a4d2e')
-  sky.addColorStop(1, '#0f2818')
-  ctx.fillStyle = sky
+/** Like CSS object-fit: cover — center-crop bitmap to cw×ch */
+function drawImageCover(ctx, img, x, y, cw, ch) {
+  const iw = img.naturalWidth
+  const ih = img.naturalHeight
+  if (!iw || !ih) return
+  const ir = iw / ih
+  const cr = cw / ch
+  let sx
+  let sy
+  let sw
+  let sh
+  if (ir > cr) {
+    sh = ih
+    sw = ih * cr
+    sx = (iw - sw) / 2
+    sy = 0
+  } else {
+    sw = iw
+    sh = iw / cr
+    sx = 0
+    sy = (ih - sh) / 2
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, cw, ch)
+}
+
+function drawBackground(ctx, w, h) {
+  const img = bgImage.value
+  if (img && img.complete && img.naturalWidth) {
+    drawImageCover(ctx, img, 0, 0, w, h)
+  } else {
+    const g = ctx.createLinearGradient(0, 0, 0, h)
+    g.addColorStop(0, '#0c1a14')
+    g.addColorStop(1, '#051008')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, w, h)
+    ctx.fillStyle = 'rgba(200, 230, 210, 0.45)'
+    ctx.font = '600 16px Outfit, system-ui, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('Loading jungle…', w / 2, h / 2)
+  }
+
+  const v = ctx.createRadialGradient(
+    w * 0.5,
+    h * 0.42,
+    h * 0.15,
+    w * 0.5,
+    h * 0.5,
+    h * 0.85
+  )
+  v.addColorStop(0, 'rgba(0, 0, 0, 0)')
+  v.addColorStop(0.65, 'rgba(5, 22, 14, 0.12)')
+  v.addColorStop(1, 'rgba(2, 14, 8, 0.35)')
+  ctx.fillStyle = v
   ctx.fillRect(0, 0, w, h)
 
-  const mist = ctx.createLinearGradient(0, h * 0.35, 0, h * 0.92)
-  mist.addColorStop(0, 'rgba(120, 200, 180, 0)')
-  mist.addColorStop(0.5, 'rgba(80, 160, 130, 0.12)')
-  mist.addColorStop(1, 'rgba(20, 50, 40, 0.35)')
-  ctx.fillStyle = mist
+  const bottomFade = ctx.createLinearGradient(0, h * 0.55, 0, h)
+  bottomFade.addColorStop(0, 'rgba(0, 0, 0, 0)')
+  bottomFade.addColorStop(1, 'rgba(0, 18, 10, 0.25)')
+  ctx.fillStyle = bottomFade
   ctx.fillRect(0, 0, w, h)
-
-  // Warm light through canopy
-  const glow = ctx.createRadialGradient(w * 0.35, h * 0.08, 0, w * 0.35, h * 0.08, h * 0.75)
-  glow.addColorStop(0, 'rgba(255, 220, 150, 0.18)')
-  glow.addColorStop(0.4, 'rgba(255, 200, 120, 0.06)')
-  glow.addColorStop(1, 'rgba(0,0,0,0)')
-  ctx.fillStyle = glow
-  ctx.fillRect(0, 0, w, h)
-}
-
-function drawDistantHills(ctx, w, h, t) {
-  const sway = Math.sin(t * 0.4) * 4
-  ctx.save()
-  ctx.translate(sway * 0.15, 0)
-
-  ctx.fillStyle = '#0d2420'
-  ctx.beginPath()
-  ctx.moveTo(0, h * 0.42)
-  ctx.bezierCurveTo(w * 0.2, h * 0.32 + sway, w * 0.45, h * 0.38, w * 0.65, h * 0.33)
-  ctx.bezierCurveTo(w * 0.85, h * 0.28, w, h * 0.4, w, h * 0.55)
-  ctx.lineTo(w, h)
-  ctx.lineTo(0, h)
-  ctx.closePath()
-  ctx.fill()
-
-  ctx.fillStyle = '#102a24'
-  ctx.beginPath()
-  ctx.moveTo(0, h * 0.48)
-  ctx.bezierCurveTo(w * 0.25, h * 0.4, w * 0.5, h * 0.45, w * 0.75, h * 0.4)
-  ctx.bezierCurveTo(w * 0.92, h * 0.36, w, h * 0.48, w, h * 0.58)
-  ctx.lineTo(w, h)
-  ctx.lineTo(0, h)
-  ctx.closePath()
-  ctx.fill()
-  ctx.restore()
-}
-
-function drawTreeSilhouette(ctx, x, w, h, scale) {
-  ctx.save()
-  ctx.translate(x, h * 0.55)
-  ctx.scale(scale, scale)
-  // Trunk
-  ctx.fillStyle = '#1a1008'
-  ctx.beginPath()
-  ctx.moveTo(-12, 0)
-  ctx.quadraticCurveTo(-8, -h * 0.25, -4, -h * 0.42)
-  ctx.lineTo(6, -h * 0.4)
-  ctx.quadraticCurveTo(10, -h * 0.2, 14, 0)
-  ctx.closePath()
-  ctx.fill()
-  // Canopy blobs
-  const greens = ['#0d3d28', '#124b32', '#0f3525']
-  for (let i = 0; i < 5; i++) {
-    ctx.fillStyle = greens[i % greens.length]
-    ctx.beginPath()
-    ctx.ellipse(-20 + i * 18, -h * 0.48 - i * 6, 35 - i * 3, 22, 0, 0, Math.PI * 2)
-    ctx.fill()
-  }
-  ctx.restore()
-}
-
-function drawVinesAndFoliage(ctx, w, h, t) {
-  ctx.strokeStyle = 'rgba(15, 45, 28, 0.85)'
-  ctx.lineWidth = 3
-  for (let i = 0; i < 6; i++) {
-    const x0 = 40 + i * (w / 5.5)
-    const sway = Math.sin(t * 0.8 + i) * 12
-    ctx.beginPath()
-    ctx.moveTo(x0 + sway, 0)
-    ctx.bezierCurveTo(x0 + sway * 1.5, h * 0.25, x0 - sway, h * 0.55, x0 + sway * 0.5, h * 0.85)
-    ctx.stroke()
-  }
-
-  const patches = [
-    { xf: 0.076, yf: 0.153, rxf: 0.053, ryf: 0.058, c: '#1d5c3a' },
-    { xf: 0.283, yf: 0.089, rxf: 0.041, ryf: 0.045, c: '#226644' },
-    { xf: 0.586, yf: 0.142, rxf: 0.056, ryf: 0.052, c: '#1a5035' },
-    { xf: 0.870, yf: 0.100, rxf: 0.045, ryf: 0.048, c: '#1f5a3d' },
-    { xf: 0.049, yf: 0.806, rxf: 0.048, ryf: 0.055, c: '#163d2a' },
-    { xf: 0.337, yf: 0.903, rxf: 0.061, ryf: 0.058, c: '#1a4d35' },
-    { xf: 0.717, yf: 0.887, rxf: 0.050, ryf: 0.052, c: '#174430' },
-    { xf: 0.957, yf: 0.806, rxf: 0.052, ryf: 0.048, c: '#143d2a' },
-    { xf: 0.488, yf: 0.194, rxf: 0.070, ryf: 0.065, c: 'rgba(30, 90, 55, 0.45)' }
-  ]
-  for (const p of patches) {
-    const px = p.xf * w
-    const py = p.yf * h
-    const prx = p.rxf * w
-    const pry = p.ryf * h
-    ctx.fillStyle = p.c
-    ctx.beginPath()
-    ctx.ellipse(px, py, prx, pry, Math.sin(t * 0.3 + px * 0.01) * 0.08, 0, Math.PI * 2)
-    ctx.fill()
-  }
-}
-
-function drawGround(ctx, w, h) {
-  const g = ctx.createLinearGradient(0, h * 0.78, 0, h)
-  g.addColorStop(0, 'rgba(12, 35, 22, 0)')
-  g.addColorStop(0.3, 'rgba(8, 28, 16, 0.55)')
-  g.addColorStop(1, 'rgba(4, 18, 10, 0.92)')
-  ctx.fillStyle = g
-  ctx.fillRect(0, h * 0.72, w, h * 0.28)
-
-  ctx.fillStyle = 'rgba(5, 20, 12, 0.4)'
-  ctx.fillRect(0, h * 0.88, w, h * 0.12)
-}
-
-function drawFireflies(ctx, t) {
-  for (const f of FIREFLIES) {
-    const pulse = 0.4 + Math.sin(t * 2 + f.phase) * 0.35
-    const gx = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.size * 8)
-    gx.addColorStop(0, `rgba(200, 255, 170, ${pulse * 0.55})`)
-    gx.addColorStop(0.5, `rgba(150, 220, 120, ${pulse * 0.18})`)
-    gx.addColorStop(1, 'rgba(0,0,0,0)')
-    ctx.fillStyle = gx
-    ctx.beginPath()
-    ctx.arc(f.x + Math.sin(t + f.phase) * 6, f.y + Math.cos(t * 1.3 + f.phase) * 4, f.size * 6, 0, Math.PI * 2)
-    ctx.fill()
-  }
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -274,17 +196,10 @@ function draw() {
   const ctx = canvas.getContext('2d')
   const w = CANVAS_W
   const h = CANVAS_H
-  const t = (performance.now() - startTime) / 1000
 
   const { players, foods, sloth, monkeys } = props.getBoardState()
 
-  drawSkyAndAtmosphere(ctx, w, h)
-  drawDistantHills(ctx, w, h, t)
-  drawTreeSilhouette(ctx, -20, w, h, 1.15)
-  drawTreeSilhouette(ctx, w - 110, w, h, 1.05)
-  drawVinesAndFoliage(ctx, w, h, t)
-  drawGround(ctx, w, h)
-  drawFireflies(ctx, t)
+  drawBackground(ctx, w, h)
 
   // Collectibles — larger emoji with soft glow
   ctx.textAlign = 'center'
@@ -347,7 +262,15 @@ function draw() {
 }
 
 onMounted(() => {
-  startTime = performance.now()
+  const img = new Image()
+  img.decoding = 'async'
+  img.onload = () => {
+    bgImage.value = img
+  }
+  img.onerror = () => {
+    console.warn('[JungleCanvas] Background image failed to load:', JUNGLE_BG_URL)
+  }
+  img.src = JUNGLE_BG_URL
   rafId = requestAnimationFrame(draw)
 })
 
