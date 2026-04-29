@@ -100,7 +100,7 @@ The packaged app loads the image from **`/design/background.png`** (served from 
 
 ## Starting the game — deployed (Railway / Render)
 
-No extra steps. The server serves the built Vue app and the QR code URL is derived from `window.location.origin` automatically, so it will point to your public domain.
+No extra steps. The server serves the built Vue app and the **Jungle** QR code is built from `window.location.origin` in `JungleView.vue`, so it points at your public domain — not any value from `.env.development` (that file is only for local `npm run dev:client`). Do **not** set `VITE_CONTROLLER_ORIGIN` in Railway unless you intentionally need a different host for the Tetris (`/`) game QR; leaving it unset makes that QR use the live site origin too.
 
 Both routes are live as soon as the app is deployed:
 
