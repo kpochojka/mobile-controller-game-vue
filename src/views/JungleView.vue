@@ -96,14 +96,17 @@ onUnmounted(() => {
 <style scoped>
 .jungle-page {
   position: relative;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 28px;
-  min-height: 100vh;
-  padding: 28px 24px 40px;
   box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+  align-items: start;
+  gap: clamp(10px, 1.5vw, 24px);
+  width: 100%;
+  max-width: 100vw;
+  min-height: 100vh;
+  padding: clamp(12px, 2vw, 28px)
+    clamp(10px, 2vw, 24px)
+    clamp(16px, 3vw, 40px);
   font-family: 'Outfit', system-ui, sans-serif;
   background:
     radial-gradient(ellipse 120% 80% at 50% -20%, rgba(80, 180, 130, 0.22), transparent 55%),
@@ -111,7 +114,7 @@ onUnmounted(() => {
     radial-gradient(ellipse 80% 50% at 0% 80%, rgba(20, 60, 45, 0.4), transparent 45%),
     linear-gradient(165deg, #06120c 0%, #0a1f16 35%, #061008 100%);
   color: #e8f5e9;
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 
 .jungle-noise {
@@ -130,18 +133,24 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 8px;
+  min-width: 0;
+  max-width: 232px;
+  padding-top: 4px;
+}
+
+.sidebar-left .brand-block {
+  max-width: 100%;
 }
 
 .brand-block {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: clamp(12px, 2vw, 20px);
   max-width: 220px;
 }
 
 .brand-title {
   margin: 0 0 6px;
-  font-size: 1.65rem;
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   background: linear-gradient(120deg, #c8f5c8 0%, #7fd99a 45%, #4ade80 100%);
@@ -152,7 +161,7 @@ onUnmounted(() => {
 
 .brand-sub {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: clamp(0.65rem, 1.6vw, 0.8rem);
   font-weight: 600;
   color: rgba(180, 220, 190, 0.55);
   letter-spacing: 0.04em;
@@ -160,8 +169,44 @@ onUnmounted(() => {
 }
 
 .canvas-area {
-  flex-shrink: 0;
   position: relative;
   z-index: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .jungle-page {
+    grid-template-columns: 1fr;
+    gap: clamp(14px, 4vw, 22px);
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: clamp(14px, 4vw, 24px);
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .sidebar-left {
+    justify-content: center;
+  }
+
+  .sidebar-right {
+    justify-content: center;
+  }
+
+  .canvas-area {
+    order: -1;
+  }
+
+  .brand-block {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
 }
 </style>

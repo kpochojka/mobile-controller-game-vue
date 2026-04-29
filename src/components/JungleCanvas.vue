@@ -1,11 +1,13 @@
 <template>
-  <div class="canvas-frame">
-    <canvas
-      ref="canvasEl"
-      :width="CANVAS_W"
-      :height="CANVAS_H"
-      class="jungle-canvas"
-    />
+  <div class="canvas-scale-root">
+    <div class="canvas-frame">
+      <canvas
+        ref="canvasEl"
+        :width="CANVAS_W"
+        :height="CANVAS_H"
+        class="jungle-canvas"
+      />
+    </div>
   </div>
 </template>
 
@@ -15,7 +17,9 @@ import {
   JUNGLE_CANVAS_W as CANVAS_W,
   JUNGLE_CANVAS_H as CANVAS_H,
   JUNGLE_BIRD_SIZE as BIRD_SIZE,
-  JUNGLE_FOOD_SIZE as FOOD_SIZE
+  JUNGLE_FOOD_SIZE as FOOD_SIZE,
+  JUNGLE_SLOTH_SIZE as SLOTH_SIZE,
+  JUNGLE_MONKEY_SIZE as MONKEY_SIZE
 } from '../constants/jungleGame.js'
 
 const props = defineProps({
@@ -131,20 +135,24 @@ function drawVinesAndFoliage(ctx, w, h, t) {
   }
 
   const patches = [
-    { x: 70,  y: 95,  rx: 68, ry: 36, c: '#1d5c3a' },
-    { x: 260, y: 55,  rx: 52, ry: 28, c: '#226644' },
-    { x: 540, y: 88,  rx: 72, ry: 32, c: '#1a5035' },
-    { x: 800, y: 62,  rx: 58, ry: 30, c: '#1f5a3d' },
-    { x: 45,  y: 500, rx: 62, ry: 34, c: '#163d2a' },
-    { x: 310, y: 560, rx: 78, ry: 36, c: '#1a4d35' },
-    { x: 660, y: 540, rx: 64, ry: 32, c: '#174430' },
-    { x: 880, y: 500, rx: 48, ry: 26, c: '#143d2a' },
-    { x: 450, y: 120, rx: 90, ry: 40, c: 'rgba(30, 90, 55, 0.45)' }
+    { xf: 0.076, yf: 0.153, rxf: 0.053, ryf: 0.058, c: '#1d5c3a' },
+    { xf: 0.283, yf: 0.089, rxf: 0.041, ryf: 0.045, c: '#226644' },
+    { xf: 0.586, yf: 0.142, rxf: 0.056, ryf: 0.052, c: '#1a5035' },
+    { xf: 0.870, yf: 0.100, rxf: 0.045, ryf: 0.048, c: '#1f5a3d' },
+    { xf: 0.049, yf: 0.806, rxf: 0.048, ryf: 0.055, c: '#163d2a' },
+    { xf: 0.337, yf: 0.903, rxf: 0.061, ryf: 0.058, c: '#1a4d35' },
+    { xf: 0.717, yf: 0.887, rxf: 0.050, ryf: 0.052, c: '#174430' },
+    { xf: 0.957, yf: 0.806, rxf: 0.052, ryf: 0.048, c: '#143d2a' },
+    { xf: 0.488, yf: 0.194, rxf: 0.070, ryf: 0.065, c: 'rgba(30, 90, 55, 0.45)' }
   ]
   for (const p of patches) {
+    const px = p.xf * w
+    const py = p.yf * h
+    const prx = p.rxf * w
+    const pry = p.ryf * h
     ctx.fillStyle = p.c
     ctx.beginPath()
-    ctx.ellipse(p.x, p.y, p.rx, p.ry, Math.sin(t * 0.3 + p.x * 0.01) * 0.08, 0, Math.PI * 2)
+    ctx.ellipse(px, py, prx, pry, Math.sin(t * 0.3 + px * 0.01) * 0.08, 0, Math.PI * 2)
     ctx.fill()
   }
 }
@@ -184,6 +192,43 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, rr)
   ctx.arcTo(x, y, x + w, y, rr)
   ctx.closePath()
+}
+
+function drawSloth(ctx, sloth) {
+  ctx.save()
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.font = `${SLOTH_SIZE}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
+  ctx.shadowColor = 'rgba(0, 25, 15, 0.65)'
+  ctx.shadowBlur = 18
+  ctx.shadowOffsetY = 5
+  ctx.fillText('🦥', sloth.x, sloth.y)
+  ctx.shadowBlur = 0
+  ctx.shadowOffsetY = 0
+  ctx.font = '700 11px Outfit, system-ui, sans-serif'
+  ctx.fillStyle = 'rgba(230, 245, 235, 0.92)'
+  ctx.fillText('Hungry sloth', sloth.x, sloth.y + SLOTH_SIZE * 0.42)
+  ctx.restore()
+}
+
+function drawMonkeys(ctx, monkeys) {
+  if (!monkeys?.length) return
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.font = `${MONKEY_SIZE}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
+  for (const m of monkeys) {
+    ctx.save()
+    ctx.shadowColor = 'rgba(0, 20, 10, 0.5)'
+    ctx.shadowBlur = 14
+    ctx.shadowOffsetY = 4
+    ctx.fillText('🐒', m.x, m.y)
+    ctx.shadowBlur = 0
+    ctx.shadowOffsetY = 0
+    ctx.font = '700 10px Outfit, system-ui, sans-serif'
+    ctx.fillStyle = 'rgba(254, 249, 231, 0.95)'
+    ctx.fillText(m.label, m.x, m.y + MONKEY_SIZE * 0.42)
+    ctx.restore()
+  }
 }
 
 function drawBirdLabel(ctx, cx, cy, name, score) {
@@ -231,7 +276,7 @@ function draw() {
   const h = CANVAS_H
   const t = (performance.now() - startTime) / 1000
 
-  const { players, foods } = props.getBoardState()
+  const { players, foods, sloth, monkeys } = props.getBoardState()
 
   drawSkyAndAtmosphere(ctx, w, h)
   drawDistantHills(ctx, w, h, t)
@@ -252,6 +297,9 @@ function draw() {
     ctx.fillText(food.emoji, food.x, food.y)
     ctx.restore()
   }
+
+  if (sloth) drawSloth(ctx, sloth)
+  drawMonkeys(ctx, monkeys)
 
   // Birds
   ctx.font = `${BIRD_SIZE}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`
@@ -309,9 +357,27 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/**
+ * Fits the viewport: intrinsic buffer stays 1280×740 while CSS scales the drawable region.
+ */
+.canvas-scale-root {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  aspect-ratio: 1280 / 740;
+  min-height: 0;
+}
+
 .canvas-frame {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   border-radius: 20px;
   padding: 3px;
+  box-sizing: border-box;
   background: linear-gradient(
     145deg,
     rgba(80, 160, 110, 0.45) 0%,
@@ -326,6 +392,9 @@ onUnmounted(() => {
 
 .jungle-canvas {
   display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   border-radius: 17px;
   vertical-align: middle;
 }

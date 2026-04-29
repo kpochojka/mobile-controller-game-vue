@@ -37,8 +37,11 @@ const sorted = computed(() =>
     rgba(6, 22, 14, 0.88) 100%
   );
   border-radius: 18px;
-  padding: 18px 18px 16px;
-  min-width: 220px;
+  padding: clamp(12px, 2vw, 18px);
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 260px;
   color: #e8f5e9;
   display: flex;
   flex-direction: column;
@@ -95,9 +98,13 @@ const sorted = computed(() =>
 
 .name {
   flex: 1;
+  min-width: 0;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .score {

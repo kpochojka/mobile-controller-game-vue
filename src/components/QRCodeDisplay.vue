@@ -85,7 +85,9 @@ watch(
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  min-width: 210px;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: min(210px, 100%);
   font-family: 'Outfit', system-ui, sans-serif;
 }
 
@@ -93,6 +95,9 @@ watch(
   background: #fff;
   border-radius: 14px;
   padding: 14px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 210px;
   box-shadow: 0 0 28px rgba(0, 200, 255, 0.28);
 }
 
@@ -107,13 +112,23 @@ watch(
 }
 
 .qr-placeholder {
-  width: 180px;
-  height: 180px;
+  width: 100%;
+  max-width: 180px;
+  aspect-ratio: 1;
+  min-height: 136px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #999;
   font-size: 13px;
+}
+
+.qr-box img {
+  display: block;
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  vertical-align: top;
 }
 
 .qr-label {
