@@ -15,11 +15,11 @@ Built with **Vue 3 + Vite + Socket.io** — no extra dependencies beyond what th
                                                         │
                                             socket.emit('jungle-control', { playerId, action })
                                                         ▼
-                                           [JungleView.vue /jungle]
+                                           [JungleView.vue / or /jungle]
                                      moves the matching bird on the shared canvas
 ```
 
-- The **game screen** (`/jungle`) runs on a computer, TV, or projector — everyone can see it.
+- The **game screen** (`/` or `/jungle`) runs on a computer, TV, or projector — everyone can see it.
 - Each **phone** (`/jungle-controller`) controls one independent bird.
 - Up to 8 bird types are assigned automatically as players join; more than 8 players cycle through the pool again.
 - The round lasts **60 seconds**. When time expires, a ranking screen appears on the main display and all phones show a game-over message.
@@ -69,28 +69,28 @@ npm run dev:client
 
 For production-style play, only Terminal 1 is needed. The server listens on port `3000` by default (or the next free port if 3000 is busy).
 
-**Open the game screen (not the Tetris home route `/`):**
+**Open the game screen:**
 
 ```
-http://localhost:3000/jungle
+http://localhost:3000/
 ```
 
-With the dev client (often port **5173**), use:
+(`/jungle` is the same view.) With the dev client (often port **5173**):
 
 ```
-http://localhost:5173/jungle
+http://localhost:5173/
 ```
 
 **Players join from their phones** — the game screen shows a QR code. Phones must be on the same Wi-Fi network as the computer running the server.
 
-If `localhost` does not resolve on phones (common on some networks), set the `VITE_CONTROLLER_ORIGIN` variable so the QR code points to your machine's local IP:
+If `localhost` does not resolve on phones (common on some networks), set `VITE_CONTROLLER_ORIGIN` so the QR points at your machine’s IP and the right dev port (Vite is usually **5173**; a plain `node server.js` build is **3000**):
 
 ```bash
-# .env.development  (copy from .env.example if present)
-VITE_CONTROLLER_ORIGIN=http://192.168.1.42:3000
+# .env.development  (see .env.example)
+VITE_CONTROLLER_ORIGIN=http://192.168.1.42:5173
 ```
 
-Replace `192.168.1.42` with the actual local IP of your machine (`ipconfig` on Windows, `ifconfig` / `ip a` on Linux/macOS).
+The QR URL appends `/jungle-controller` to this base. Replace `192.168.1.42` with your LAN IP (`ipconfig` / `ifconfig` / `ip a`).
 
 ### Background image in builds
 
@@ -100,24 +100,24 @@ The packaged app loads the image from **`/design/background.png`** (served from 
 
 ## Starting the game — deployed (Railway / Render)
 
-No extra steps. The server serves the built Vue app and the **Jungle** QR code is built from `window.location.origin` in `JungleView.vue`, so it points at your public domain — not any value from `.env.development` (that file is only for local `npm run dev:client`). Do **not** set `VITE_CONTROLLER_ORIGIN` in Railway unless you intentionally need a different host for the Tetris (`/`) game QR; leaving it unset makes that QR use the live site origin too.
+No extra steps. The server serves the built Vue app and the QR code uses `window.location.origin` in `JungleView.vue`, so it points at your public domain — not values from `.env.development` (that file is only for local `npm run dev:client`). You normally **do not** set `VITE_CONTROLLER_ORIGIN` on Railway; leave it unset so the QR uses the live site origin.
 
 Both routes are live as soon as the app is deployed:
 
 | URL | Purpose |
 |---|---|
-| `https://your-app.up.railway.app/jungle` | Game screen (open on TV / laptop) |
+| `https://your-app.up.railway.app/` or `.../jungle` | Game screen (open on TV / laptop) |
 | `https://your-app.up.railway.app/jungle-controller` | Controller (players scan QR) |
 
 ---
 
 ## Playing the game
 
-### On the game screen (`/jungle`)
+### On the game screen (`/` or `/jungle`)
 
 - The canvas shows the jungle arena with all birds flying simultaneously.
 - Tropical fruit items (🍌🥭🍍🍓🫐🍇🍒🌺🪲🥝) appear at random positions.
-- Each bird has the player's name and current score displayed below it.
+- Each bird shows its **current score above** it on the canvas (names appear in the sidebar ranking).
 - A countdown timer appears in the top-right (**TIME LEFT** chip).
 - The scoreboard shows **live ranking** beside the arena (layout adapts on small screens).
 - A **sloth** and **two monkeys** move automatically, eat fruit, and block movement; monkeys reset a player's score on contact (see above).
@@ -143,7 +143,7 @@ Both routes are live as soon as the app is deployed:
 
 ## Starting a new round
 
-After the round ends, reload the game screen (`/jungle`) to reset and start again. Players do not need to reload their controller pages — they can scan the QR code again or simply refresh.
+After the round ends, reload the game screen (`/` or `/jungle`) to reset and start again. Players do not need to reload their controller pages — they can scan the QR code again or simply refresh.
 
 ---
 
@@ -166,10 +166,8 @@ After the round ends, reload the game screen (`/jungle`) to reset and start agai
 
 | Path | File | Description |
 |---|---|---|
-| `/jungle` | `src/views/JungleView.vue` | Game display (computer/TV); QR + scoreboard |
+| `/`, `/jungle` | `src/views/JungleView.vue` | Game display (computer/TV); QR + scoreboard |
 | `/jungle-controller` | `src/views/JungleControllerView.vue` | Phone controller |
 | — | `src/components/JungleCanvas.vue` | Canvas rendering, background art, entities |
 | — | `src/composables/useJungle.js` | Local simulation: movement, collisions, NPCs, scoring |
 | — | `src/constants/jungleGame.js` | Canvas size and entity sizes |
-
-The Tetris game (`/` and `/controller`) is unaffected and runs in the same server process.

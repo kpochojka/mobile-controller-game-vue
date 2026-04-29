@@ -7,19 +7,15 @@ const app    = express()
 const server = http.createServer(app)
 const io     = new Server(server)
 
-// Serwuje zbudowaną aplikację Vue z folderu dist/
+// Serve the built Vue app from dist/
 app.use(express.static(path.join(__dirname, 'dist')))
 
-// SPA fallback — Vue Router obsługuje /controller
+// SPA fallback — Vue Router
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
 
-// ── Socket.io ────────────────────────────────────────
-let displaySocket = null
-const controllerSockets = new Set()
-
-// ── Jungle game state ─────────────────────────────────
+// ── Jungle Birds — Socket.io ──────────────────────────
 let jungleDisplaySocket = null
 const junglePlayers = new Map() // socket.id → { id, bird, score, name }
 
@@ -36,25 +32,6 @@ const BIRD_POOL = [
 let birdIndex = 0
 
 io.on('connection', (socket) => {
-  socket.on('register-display', () => {
-    displaySocket = socket
-    socket.emit('display-ready', { controllers: controllerSockets.size })
-  })
-
-  socket.on('register-controller', () => {
-    controllerSockets.add(socket.id)
-    socket.emit('controller-ready')
-    if (displaySocket) {
-      displaySocket.emit('controller-update', { count: controllerSockets.size })
-    }
-  })
-
-  // Przekazuje ruch z kontrolera → wyświetlacz
-  socket.on('control', (data) => {
-    if (displaySocket) displaySocket.emit('control', data)
-  })
-
-  // ── Jungle events ──────────────────────────────────
   socket.on('register-jungle-display', () => {
     jungleDisplaySocket = socket
     socket.emit('jungle-display-ready', { players: [...junglePlayers.values()] })
@@ -103,10 +80,6 @@ io.on('connection', (socket) => {
   })
 
   socket.on('disconnect', () => {
-    if (displaySocket?.id === socket.id) displaySocket = null
-    if (controllerSockets.delete(socket.id) && displaySocket) {
-      displaySocket.emit('controller-update', { count: controllerSockets.size })
-    }
     if (jungleDisplaySocket?.id === socket.id) jungleDisplaySocket = null
     if (junglePlayers.has(socket.id)) {
       junglePlayers.delete(socket.id)
@@ -148,7 +121,7 @@ function start(port) {
   server.listen(port, () => {
     server.removeAllListeners('error')
     const actual = server.address().port
-    console.log(`\n🎮  Tetris Vue — http://localhost:${actual}\n`)
+    console.log(`\n🦜  Jungle Birds — http://localhost:${actual}\n`)
     if (!strictPort && actual !== preferredPort) {
       console.warn(
         `Socket.io proxy (Vite): VITE_SOCKET_IO_TARGET=http://localhost:${actual} npm run dev:client\n`

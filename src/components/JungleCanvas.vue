@@ -125,11 +125,6 @@ function drawSloth(ctx, sloth) {
   ctx.shadowBlur = 18
   ctx.shadowOffsetY = 5
   ctx.fillText('🦥', sloth.x, sloth.y)
-  ctx.shadowBlur = 0
-  ctx.shadowOffsetY = 0
-  ctx.font = '700 11px Outfit, system-ui, sans-serif'
-  ctx.fillStyle = 'rgba(230, 245, 235, 0.92)'
-  ctx.fillText('Hungry sloth', sloth.x, sloth.y + SLOTH_SIZE * 0.42)
   ctx.restore()
 }
 
@@ -144,49 +139,26 @@ function drawMonkeys(ctx, monkeys) {
     ctx.shadowBlur = 14
     ctx.shadowOffsetY = 4
     ctx.fillText('🐒', m.x, m.y)
-    ctx.shadowBlur = 0
-    ctx.shadowOffsetY = 0
-    ctx.font = '700 10px Outfit, system-ui, sans-serif'
-    ctx.fillStyle = 'rgba(254, 249, 231, 0.95)'
-    ctx.fillText(m.label, m.x, m.y + MONKEY_SIZE * 0.42)
     ctx.restore()
   }
 }
 
-function drawBirdLabel(ctx, cx, cy, name, score) {
-  ctx.font = '600 13px Outfit, system-ui, sans-serif'
-  const nameStr = String(name || '?')
-  const scoreStr = String(score)
-  const twName = ctx.measureText(nameStr).width
-  ctx.font = '700 12px Outfit, system-ui, sans-serif'
-  const twScore = ctx.measureText(scoreStr).width
-  const padX = 10
-  const padY = 5
-  const gap = 2
-  const w = Math.max(twName, twScore) + padX * 2
-  const hName = 16
-  const hScore = 14
-  const boxH = hName + hScore + padY * 2 + gap
-  const top = cy + BIRD_SIZE * 0.42
+/** Score only, above the bird — gap between score bottom and bird top of hit circle. */
+const BIRD_SCORE_FONT_PX = 30
+const BIRD_SCORE_GAP_PX = 14
 
+function drawBirdScore(ctx, cx, cy, score) {
+  const scoreStr = String(score ?? 0)
+  const y = cy - BIRD_SIZE / 2 - BIRD_SCORE_GAP_PX - BIRD_SCORE_FONT_PX / 2
   ctx.save()
-  ctx.shadowColor = 'rgba(0,0,0,0.45)'
-  ctx.shadowBlur = 8
-  ctx.shadowOffsetY = 2
-  ctx.fillStyle = 'rgba(8, 28, 18, 0.82)'
-  roundRect(ctx, cx - w / 2, top, w, boxH, 10)
-  ctx.fill()
-  ctx.shadowBlur = 0
-  ctx.shadowOffsetY = 0
-
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillStyle = '#e8f5e9'
-  ctx.font = '600 13px Outfit, system-ui, sans-serif'
-  ctx.fillText(nameStr, cx, top + padY + hName / 2)
-  ctx.fillStyle = '#ffe082'
-  ctx.font = '700 12px Outfit, system-ui, sans-serif'
-  ctx.fillText(scoreStr, cx, top + padY + hName + gap + hScore / 2)
+  ctx.font = `800 ${BIRD_SCORE_FONT_PX}px Outfit, system-ui, sans-serif`
+  ctx.lineWidth = 6
+  ctx.strokeStyle = 'rgba(0, 18, 10, 0.88)'
+  ctx.fillStyle = '#fde68a'
+  ctx.strokeText(scoreStr, cx, y)
+  ctx.fillText(scoreStr, cx, y)
   ctx.restore()
 }
 
@@ -226,7 +198,7 @@ function draw() {
     ctx.fillText(player.bird.emoji, player.x, player.y)
     ctx.shadowBlur = 0
     ctx.shadowOffsetY = 0
-    drawBirdLabel(ctx, player.x, player.y, player.name, player.score)
+    drawBirdScore(ctx, player.x, player.y, player.score)
     ctx.restore()
   }
 

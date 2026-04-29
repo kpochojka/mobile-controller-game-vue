@@ -1,7 +1,7 @@
 {
-  "name": "tetris-vue",
+  "name": "jungle-birds",
   "version": "1.0.0",
-  "description": "Tetris sterowany telefonem przez QR kod — Vue 3",
+  "description": "Jungle Birds — multiplayer phone controllers + shared screen (Vue 3 + Vite + Socket.io)",
   "scripts": {
     "dev:server": "node server.js",
     "dev:client": "vite",

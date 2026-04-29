@@ -1,6 +1,8 @@
 # Agent Specification: Jungle Birds Game
 
-## Your task
+> **Note:** This document described adding Jungle Birds alongside Tetris. The Tetris game has since been **removed** from the repo; the codebase is Jungle-only. Keep this file as a design reference; ignore instructions about not modifying Tetris files.
+
+## Your task (historical)
 
 Add a second game — **Jungle Birds** — to the existing `tetris-vue` project. Do not touch any existing Tetris files. Add new files only, then update two existing files (`server.js` and `src/router/index.js`) with minimal, additive changes.
 

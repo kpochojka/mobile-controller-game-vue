@@ -81,7 +81,6 @@ export function useJungle() {
       const wp = pickWaypoint(pads)
       return {
         id: idx,
-        label: idx === 0 ? 'Monkey 1' : 'Monkey 2',
         x: s.xf * CANVAS_W,
         y: s.yf * CANVAS_H,
         tx: wp.tx,

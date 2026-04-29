@@ -6,11 +6,15 @@
       <header class="brand-block">
         <h1 class="brand-title">Jungle Birds</h1>
         <p class="brand-sub">Phone squad · shared screen</p>
+        <ul class="rules-blurb" aria-label="Game rules">
+          <li><strong>Goal:</strong> Most points when time runs out (60s).</li>
+          <li><strong>Collect</strong> fruit by flying over it.</li>
+          <li><strong>Sloth &amp; monkeys</strong> steal fruit and block you; <strong>monkeys reset your score to 0</strong> on contact (not the sloth).</li>
+        </ul>
       </header>
       <QRCodeDisplay
         :url="controllerUrl"
         :controllerCount="playerList.length"
-        theme="jungle"
       />
     </aside>
 
@@ -166,6 +170,31 @@ onUnmounted(() => {
   color: rgba(180, 220, 190, 0.55);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.rules-blurb {
+  margin: 14px 0 0;
+  padding: 0 0 0 1.1em;
+  text-align: left;
+  font-size: clamp(0.68rem, 1.5vw, 0.78rem);
+  line-height: 1.45;
+  color: rgba(190, 230, 200, 0.72);
+  font-weight: 500;
+  max-width: 220px;
+  list-style: disc;
+}
+
+.rules-blurb li {
+  margin-bottom: 0.35em;
+}
+
+.rules-blurb li:last-child {
+  margin-bottom: 0;
+}
+
+.rules-blurb strong {
+  color: rgba(220, 248, 220, 0.9);
+  font-weight: 700;
 }
 
 .canvas-area {
