@@ -8,7 +8,7 @@
           <h1 class="brand-title">Jungle Birds</h1>
           <p class="brand-sub">Phone squad · shared screen</p>
           <ul class="rules-blurb" aria-label="Game rules">
-            <li><strong>Goal:</strong> Most points when time runs out (60s).</li>
+            <li><strong>Goal:</strong> Most points when time runs out (120s).</li>
             <li><strong>Collect</strong> fruit by flying over it.</li>
             <li><strong>Sloth &amp; monkeys</strong> steal fruit and block you; <strong>monkeys reset your score to 0</strong> on contact (not the sloth).</li>
           </ul>

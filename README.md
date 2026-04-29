@@ -4,7 +4,7 @@ A multiplayer browser game built with **Vue 3**, **Vite**, and **Socket.io**. Ea
 
 ## Game rules (short)
 
-- **Goal:** Score as many points as you can before **time runs out** (60 seconds).
+- **Goal:** Score as many points as you can before **time runs out** (120 seconds).
 - **How to score:** Move your bird over **fruit** on the jungle floor to collect it. Fruit respawns after it is picked up or eaten by an NPC.
 - **Sloth:** Slow obstacle that wanders and **eats fruit**; it does **not** reset your score.
 - **Monkeys:** Faster obstacles; they steal fruit too. If your bird **touches a monkey**, your **score goes back to 0** (until you move away and touch again in a new “episode”).

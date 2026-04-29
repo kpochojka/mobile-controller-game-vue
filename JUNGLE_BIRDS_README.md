@@ -22,7 +22,7 @@ Built with **Vue 3 + Vite + Socket.io** — no extra dependencies beyond what th
 - The **game screen** (`/` or `/jungle`) runs on a computer, TV, or projector — everyone can see it.
 - Each **phone** (`/jungle-controller`) controls one independent bird.
 - Up to 8 bird types are assigned automatically as players join; more than 8 players cycle through the pool again.
-- The round lasts **60 seconds**. When time expires, a ranking screen appears on the main display and all phones show a game-over message.
+- The round lasts **120 seconds**. When time expires, a ranking screen appears on the main display and all phones show a game-over message.
 
 ---
 

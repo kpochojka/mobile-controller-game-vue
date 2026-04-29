@@ -49,14 +49,14 @@ The server currently has a single-game model: one `displaySocket` (the game scre
 
 ## What to build
 
-A jungle-themed multiplayer game where each connected phone controls an independent bird flying around a shared screen collecting food. No conflict between players — each controls their own bird. Timed round of 60 seconds, then a ranking screen is shown.
+A jungle-themed multiplayer game where each connected phone controls an independent bird flying around a shared screen collecting food. No conflict between players — each controls their own bird. Timed round of 120 seconds, then a ranking screen is shown.
 
 ### Game concept summary
 - The shared game screen (`/jungle`) shows a jungle canvas with all birds flying simultaneously
 - Each phone (`/jungle-controller`) controls one bird independently via a 4-directional D-pad
 - Food items (tropical fruits) appear at random positions on the canvas
 - When a bird touches a food item, it collects it (+score for that player)
-- After 60 seconds the game ends and a ranking is displayed on the main screen
+- After 120 seconds the game ends and a ranking is displayed on the main screen
 - The phone controller shows the player's own score and their assigned bird in real time
 
 ---
@@ -123,7 +123,7 @@ const junglePlayers = new Map() // socket.id → { id, bird, score, name }
 - Update `junglePlayers.get(playerId).score = score`
 - Relay `jungle-score-update` to jungleDisplaySocket (for scoreboard) and to the specific controller socket (so phone shows own score)
 
-`jungle-game-end` — emitted by JungleView when 60s timer ends. No payload needed from client.
+`jungle-game-end` — emitted by JungleView when 120s timer ends. No payload needed from client.
 - Compile final ranking from `junglePlayers` map, sorted by score descending
 - Emit `jungle-final-ranking` to jungleDisplaySocket with `{ ranking: [...] }`
 - Emit `jungle-game-over` to all jungle controller sockets
@@ -161,7 +161,7 @@ const BIRD_SPEED = 3    // px per frame when moving
 const BIRD_SIZE = 36    // emoji render size in px
 const FOOD_SIZE = 28    // food emoji render size
 const FOOD_COUNT = 12   // max food items on screen at once
-const ROUND_DURATION = 60  // seconds
+const ROUND_DURATION = 120  // seconds
 ```
 
 ### Food items pool
@@ -202,7 +202,7 @@ let players = new Map()   // playerId → player object
 let foods = []            // array of food objects
 
 // Vue refs (template bindings)
-const timeLeft    = ref(60)
+const timeLeft    = ref(120)
 const gameActive  = ref(false)
 const gameEnded   = ref(false)
 const myScore     = ref(0)       // score of the local player (for controller view)
@@ -213,7 +213,7 @@ const playerList  = ref([])      // array of { id, name, bird, score } for score
 
 **`initGame()`**
 - Reset all state: clear `players` Map, clear `foods` array
-- Reset refs: `timeLeft = 60`, `gameActive = true`, `gameEnded = false`
+- Reset refs: `timeLeft = 120`, `gameActive = true`, `gameEnded = false`
 - Spawn initial food items (spawn `FOOD_COUNT` food items at random positions, keeping 40px margin from edges)
 - Start the game loop via `requestAnimationFrame`
 - Start the countdown timer via `setInterval` every 1 second decrementing `timeLeft`. When `timeLeft` reaches 0: set `gameActive = false`, set `gameEnded = true`, stop the loop, emit `jungle-game-end` via socket

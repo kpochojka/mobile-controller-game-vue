@@ -15,7 +15,7 @@ const SLOTH_SPEED = 0.75
 const MONKEY_SPEED = 1.95
 const WAYPOINT_ARRIVED = 45
 const FOOD_COUNT = 18
-const ROUND_DURATION = 60
+const ROUND_DURATION = 120
 
 const FOOD_POOL = ['🍌','🥭','🍍','🍓','🫐','🍇','🍒','🌺','🪲','🥝']
 
