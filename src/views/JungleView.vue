@@ -1,34 +1,37 @@
 <template>
-  <div class="jungle-page">
+  <div class="jungle-shell">
     <div class="jungle-noise" aria-hidden="true" />
 
-    <aside class="sidebar-left">
-      <header class="brand-block">
-        <h1 class="brand-title">Jungle Birds</h1>
-        <p class="brand-sub">Phone squad · shared screen</p>
-        <ul class="rules-blurb" aria-label="Game rules">
-          <li><strong>Goal:</strong> Most points when time runs out (60s).</li>
-          <li><strong>Collect</strong> fruit by flying over it.</li>
-          <li><strong>Sloth &amp; monkeys</strong> steal fruit and block you; <strong>monkeys reset your score to 0</strong> on contact (not the sloth).</li>
-        </ul>
-      </header>
-      <QRCodeDisplay
-        :url="controllerUrl"
-        :controllerCount="playerList.length"
-      />
-    </aside>
+    <div class="jungle-page">
+      <aside class="sidebar-left">
+        <header class="brand-block">
+          <h1 class="brand-title">Jungle Birds</h1>
+          <p class="brand-sub">Phone squad · shared screen</p>
+          <ul class="rules-blurb" aria-label="Game rules">
+            <li><strong>Goal:</strong> Most points when time runs out (60s).</li>
+            <li><strong>Collect</strong> fruit by flying over it.</li>
+            <li><strong>Sloth &amp; monkeys</strong> steal fruit and block you; <strong>monkeys reset your score to 0</strong> on contact (not the sloth).</li>
+          </ul>
+        </header>
+        <QRCodeDisplay
+          :url="controllerUrl"
+          :controllerCount="playerList.length"
+        />
+      </aside>
 
-    <main class="canvas-area">
-      <JungleCanvas
-        :getBoardState="getBoardState"
-        :timeLeft="timeLeft"
-        :gameActive="gameActive"
-      />
-    </main>
+      <main class="canvas-area">
+        <JungleCanvas
+          :getBoardState="getBoardState"
+          :timeLeft="timeLeft"
+          :gameActive="gameActive"
+        />
+      </main>
 
-    <aside class="sidebar-right">
-      <JungleScoreboard :players="playerList" />
-    </aside>
+      <aside class="sidebar-right">
+        <JungleScoreboard :players="playerList" />
+      </aside>
+
+    </div>
 
     <JungleOverlay :show="gameEnded" :ranking="finalRanking" />
   </div>
@@ -98,19 +101,15 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.jungle-page {
+.jungle-shell {
   position: relative;
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
-  align-items: start;
-  gap: clamp(10px, 1.5vw, 24px);
-  width: 100%;
-  max-width: 100vw;
-  min-height: 100vh;
-  padding: clamp(12px, 2vw, 28px)
-    clamp(10px, 2vw, 24px)
-    clamp(16px, 3vw, 40px);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: safe center;
+  padding: clamp(12px, 2vw, 28px) clamp(10px, 2vw, 24px);
   font-family: 'Outfit', system-ui, sans-serif;
   background:
     radial-gradient(ellipse 120% 80% at 50% -20%, rgba(80, 180, 130, 0.22), transparent 55%),
@@ -119,6 +118,18 @@ onUnmounted(() => {
     linear-gradient(165deg, #06120c 0%, #0a1f16 35%, #061008 100%);
   color: #e8f5e9;
   overflow-x: hidden;
+}
+
+.jungle-page {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+  align-items: start;
+  gap: clamp(10px, 1.5vw, 24px);
+  width: min(1680px, 100%);
+  margin-inline: auto;
 }
 
 .jungle-noise {
@@ -139,7 +150,7 @@ onUnmounted(() => {
   align-items: center;
   min-width: 0;
   max-width: 232px;
-  padding-top: 4px;
+  padding-top: 0;
 }
 
 .sidebar-left .brand-block {
@@ -205,6 +216,11 @@ onUnmounted(() => {
 }
 
 @media (max-width: 980px) {
+  .jungle-shell {
+    justify-content: flex-start;
+    padding-block: clamp(16px, 3vw, 32px);
+  }
+
   .jungle-page {
     grid-template-columns: 1fr;
     gap: clamp(14px, 4vw, 22px);

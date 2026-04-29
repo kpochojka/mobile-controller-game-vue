@@ -9,10 +9,13 @@
   box-sizing: border-box;
 }
 
+#app {
+  min-height: 100%;
+}
+
 html, body {
-  height: 100%;
-  background: #0a0a1a;
-  color: #fff;
-  font-family: 'Segoe UI', Arial, sans-serif;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
 }
 </style>
